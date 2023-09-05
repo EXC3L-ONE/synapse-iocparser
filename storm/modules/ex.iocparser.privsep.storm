@@ -19,10 +19,11 @@ function makeIocparserApiCall(url, query, asof) {
 
     $headers = $lib.dict("Content-Type"="application/json")
 
-    $resp = inet($url, $headers, $query)
+    $resp = $lib.inet.http.post($url, $headers, $query)
 
     if ($resp.code != 200) { return($lib.false) }
 
+    $resp = $resp.body
     $json = $resp.json()
     $ret = $lib.jsonstor.cacheset("ex.iocparser", $query, $json)
     if $lib.debug { 
@@ -60,6 +61,7 @@ function modelParserResponse(node, json) {
     for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
     for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
     for $ioc in $json.data.BITCOIN_ADDRESS {[crypto:currency:address=`btc/{$ioc}`] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    //for $ioc in $json.data.YARA_RULE {[it:app:yara:rule=("iocparser", $ioc) :text=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
     //for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(":") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
 
 }
