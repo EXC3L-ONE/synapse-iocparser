@@ -1,7 +1,7 @@
 name: ex-iocpraser
 version: 1.0.0
 synapse_minversion: [2, 140, 0]
-desc: The ex-iocparser package provides a power-up wrapper for the iocparser.com functionality.
+desc: The ex-iocparser package provides a power-up wrapper for the iocparser.com functionality. It allows for parsing raw text or public URLs and models appropriate nodes for the media:news and IOC nodes.
 
 author:
   url: https://github.com/EXC3L-ONE
@@ -41,7 +41,7 @@ commands:
           help: Show verbose debug output.
   
   - name: ex.iocparser.text
-    descr: Send a message using the iocparser
+    descr: Parse IOCs from raw text
     perms:
       - [ex, iocparser, user]
     cmdargs:
