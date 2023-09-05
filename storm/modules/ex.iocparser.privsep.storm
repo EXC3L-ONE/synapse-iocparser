@@ -60,6 +60,6 @@ function modelParserResponse(node, json) {
     for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
     for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
     for $ioc in $json.data.BITCOIN_ADDRESS {[crypto:currency:address=`btc/{$ioc}`] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    # for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(":") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    //for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(":") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
 
 }

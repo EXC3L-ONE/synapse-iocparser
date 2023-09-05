@@ -1,6 +1,6 @@
 $privsep = $lib.import(ex.iocparser.privsep, debug=$lib.debug)
 
-function __makeParseRequest(url, query, asof) {
+function makeParseRequest(url, query, asof) {
     $resp = $privsep.makeIocparserApiCall($url, $query, $asof)
 
     if ($resp and $resp.status = "success") {
@@ -15,12 +15,12 @@ function __makeParseRequest(url, query, asof) {
 function parseUrl(url, asof) {
     $api_url = "https://api.iocparser.com/url"
     $query = $lib.dict("url"=$url)
-    return($__makeParseRequest($api_url, $query, $asof))
+    return($makeParseRequest($api_url, $query, $asof))
 }
 
 // Parse IOCs from a text blob
 function parseText(text, asof) {
     $api_url = "https://api.iocparser.com/text"
     $query = $lib.dict("data"=$text)
-    return($__makeParseRequest($api_url, $query, $asof))
+    return($makeParseRequest($api_url, $query, $asof))
 }
