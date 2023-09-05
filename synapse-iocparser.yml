@@ -1,0 +1,66 @@
+name: ex-iocpraser
+version: 1.0.0
+synapse_minversion: [2, 140, 0]
+desc: The ex-iocparser package provides a power-up wrapper for the iocparser.com functionality.
+
+author:
+  url: https://github.com/EXC3L-ONE
+  name: EXC3L
+
+genopts:
+  dotstorm: true
+
+perms:
+  - perm: [ex, iocparser, user]
+    desc: Allows a user to leverage the ex-iocparser package
+    gate: cortex
+
+modules:
+  - name: ex.iocparser.privsep
+    asroot:perms:
+      - [ex, iocparser, user]
+
+commands:
+  - name: ex.iocparser.url
+    descr: Parse an inbound URL using iocparser.com
+    perms:
+      - [ex, iocparser, user]
+    cmdargs:
+      - - --yield
+        - default: false
+          action: store_true
+          help: Yield the newly created nodes rather than the input inet:url nodes.
+      - - --asof
+        - type: str
+          default: -30days
+          help: Specify the maximum age for a cached result. To disable caching, use --asof now.
+      - - --debug
+        - type: bool
+          default: false
+          action: store_true
+          help: Show verbose debug output.
+  
+  - name: ex.iocparser.text
+    descr: Send a message using the iocparser
+    perms:
+      - [ex, iocparser, user]
+    cmdargs:
+      - - text
+        - type: str
+          help: Text with IOCs to parse
+      - - --asof
+        - type: str
+          default: -30days
+          help: Specify the maximum age for a cached result. To disable caching, use --asof now.
+      - - --debug
+        - type: bool
+          default: false
+          action: store_true
+          help: Show verbose debug output.
+
+optic:
+    actions:
+      - name: Parse IOCs from URL
+        storm: ex.iocparser.url
+        descr: Use iocparser.com to parse IOCs from an inbound URL
+        forms: [ inet:url ]

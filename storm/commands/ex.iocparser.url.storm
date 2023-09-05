@@ -1,0 +1,11 @@
+init {
+    $api = $lib.import(ex.iocparser.api, debug=$lib.debug)
+    $privsep = $lib.import(ex.iocparser.privsep, debug=$lib.debug)
+}
+
+$data = $lib.false
+$data = $api.parseUrl($node.repr(), $cmdopts.asof)
+
+if ($data) {
+    { | $privsep.modelParserResponse($node, $data) }
+}
