@@ -4,7 +4,10 @@ init {
 }
 
 $data = $lib.false
-$data = $api.parseUrl($node.repr(), $cmdopts.asof)
+switch $node.form() {
+    "inet:url": { $data = $api.parseUrl($node.repr(), $cmdopts.asof) }
+    *: { if $lib.debug { $lib.warn("unsupported form received: {f}", f=$node.form()) } }
+}
 
 if ($data) {
     { | $privsep.modelParserResponse($node, $data) }
