@@ -7,5 +7,5 @@ $data = $lib.false
 $data = $api.parseText($cmdopts.text, $cmdopts.asof)
 
 if ($data) {
-    { $privsep.modelParserResponse($node, $data) }
+    { $privsep.modelParserTextResponse($cmdopts.text, $data) }
 }

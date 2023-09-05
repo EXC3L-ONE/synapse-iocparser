@@ -37,7 +37,7 @@ function makeIocparserApiCall(url, query, asof) {
 // Args: inbound node, JSON API resp
 // Returns: n/a
 // Yields nodes
-function modelParserResponse(node, json) {
+function modelParserUrlResponse(node, json) {
 
     $srcnode = $getMetaSource()
 
@@ -48,20 +48,46 @@ function modelParserResponse(node, json) {
     }
 
     
-    for $ioc in $json.data.DOMAIN {[inet:fqdn=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.IPv6 {[inet:ipv6=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.IPv4 {[inet:ipv4=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.EMAIL {[inet:email=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.FILE_NAME {[file:base=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.URL {[inet:url=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.FILE_HASH_MD5 {[hash:md5=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.FILE_HASH_SHA1 {[hash:sha1=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.FILE_HASH_SHA256 {[hash:sha256=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.ASN {[inet:asn=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    for $ioc in $json.data.BITCOIN_ADDRESS {[crypto:currency:address=`btc/{$ioc}`] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    //for $ioc in $json.data.YARA_RULE {[it:app:yara:rule=("iocparser", $ioc) :text=$ioc] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
-    //for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(":") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {media:news=("iocparser",$body.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.DOMAIN {[inet:fqdn=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.IPv6 {[inet:ipv6=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.IPv4 {[inet:ipv4=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.EMAIL {[inet:email=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_NAME {[file:base=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.URL {[inet:url=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_HASH_MD5 {[hash:md5=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_HASH_SHA1 {[hash:sha1=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_HASH_SHA256 {[hash:sha256=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.ASN {[inet:asn=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.BITCOIN_ADDRESS {[crypto:currency:address=`btc/{$ioc}`] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    //for $ioc in $json.data.YARA_RULE {[it:app:yara:rule=("iocparser", $ioc) :text=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+    //for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(":") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
+
+}
+
+// Parse the JSON response from the API 
+// Args: inbound node, JSON API resp
+// Returns: n/a
+// Yields nodes
+function modelParserTextResponse(query, json) {
+
+    $srcnode = $getMetaSource()
+
+    for $ioc in $json.data.DOMAIN {[inet:fqdn=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.IPv6 {[inet:ipv6=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.IPv4 {[inet:ipv4=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.EMAIL {[inet:email=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_NAME {[file:base=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.URL {[inet:url=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_HASH_MD5 {[hash:md5=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_HASH_SHA1 {[hash:sha1=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.FILE_HASH_SHA256 {[hash:sha256=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.ASN {[inet:asn=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    for $ioc in $json.data.BITCOIN_ADDRESS {[crypto:currency:address=`btc/{$ioc}`] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    //for $ioc in $json.data.YARA_RULE {[it:app:yara:rule=("iocparser", $ioc) :text=$ioc] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
+    //for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(":") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {[it:exec:query=($query, $lib.time.now()) :time=$lib.time.now() :language="iocparser" :api:url="https://api.iocparser.com/text" :text=$query]}] [<(seen)+ {yield $srcnode}]}
 
 }
