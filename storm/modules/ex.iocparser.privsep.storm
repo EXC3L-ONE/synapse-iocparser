@@ -41,7 +41,7 @@ function modelParserResponse(node, json) {
     $srcnode = $getMetaSource()
 
     if ($json.meta.title) {
-        [media:news=("iocparser",$json.meta.url) :title=$json.meta.title :summary=$json.meta.description :url=$site]
+        [media:news=("iocparser",$json.meta.url) :title=$json.meta.title :summary=$json.meta.description :url=$json.meta.url]
         [<(seen)+ { yield $srcnode }]
         [<(refs)+ { yield $node }]
     }

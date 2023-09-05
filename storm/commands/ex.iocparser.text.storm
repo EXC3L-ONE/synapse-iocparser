@@ -3,8 +3,9 @@ init {
     $privsep = $lib.import(ex.iocparser.privsep, debug=$lib.debug)
 }
 
-$data = $api.parseText($cmdopts.text)
+$data = $lib.false
+$data = $api.parseText($cmdopts.text, $cmdopts.asof)
 
 if ($data) {
-    { | $privsep.modelParserResponse($node, $data) }
+    { $privsep.modelParserResponse($node, $data) }
 }

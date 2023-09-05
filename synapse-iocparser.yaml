@@ -1,4 +1,4 @@
-name: ex-iocpraser
+name: ex-iocparser
 version: 1.0.0
 synapse_minversion: [2, 140, 0]
 desc: The ex-iocparser package provides a power-up wrapper for the iocparser.com functionality. It allows for parsing raw text or public URLs and models appropriate nodes for the media:news and IOC nodes.
@@ -16,7 +16,10 @@ perms:
     gate: cortex
 
 modules:
+  - name: ex.iocparser.api
   - name: ex.iocparser.privsep
+    modconf:
+      source: 298b09546fbb3bc115cef15ba85a3916
     asroot:perms:
       - [ex, iocparser, user]
 
@@ -27,7 +30,8 @@ commands:
       - [ex, iocparser, user]
     cmdargs:
       - - --yield
-        - default: false
+        - type: bool
+          default: false
           action: store_true
           help: Yield the newly created nodes rather than the input inet:url nodes.
       - - --asof
@@ -39,6 +43,25 @@ commands:
           default: false
           action: store_true
           help: Show verbose debug output.
+    forms:
+      input:
+        - inet:url
+      output:
+        - media:news
+        - inet:fqdn
+        - inet:ipv6
+        - inet:ipv4
+        - inet:email
+        - file:base
+        - inet:url
+        - hash:md5
+        - hash:sha1
+        - hash:sha256
+        - inet:asn
+        - it:sec:cve
+        - inet:mac
+        - crypto:currency:address
+        - it:mitre:attack:technique
   
   - name: ex.iocparser.text
     descr: Parse IOCs from raw text
@@ -57,6 +80,25 @@ commands:
           default: false
           action: store_true
           help: Show verbose debug output.
+    forms:
+      input:
+        - inet:url
+      output:
+        - media:news
+        - inet:fqdn
+        - inet:ipv6
+        - inet:ipv4
+        - inet:email
+        - file:base
+        - inet:url
+        - hash:md5
+        - hash:sha1
+        - hash:sha256
+        - inet:asn
+        - it:sec:cve
+        - inet:mac
+        - crypto:currency:address
+        - it:mitre:attack:technique
 
 optic:
     actions:
