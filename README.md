@@ -31,3 +31,11 @@ Scrapes text provided as a command line argument, creates an `it:exec:query` nod
 
 ##### Example:
 `ex.iocparser.text "example.com 1.1.1.1"`
+
+---
+## Installation
+The easiest way to use this Power-Up is to load the JSON package into the Cortex by running: 
+
+`pkg.load --raw "https://raw.githubusercontent.com/EXC3L-ONE/synapse-iocparser/main/synapse_iocparser.json"`
+
+Alternatively, you can also clone this repo, and load the package via `python -m synapse.tools.genpkg` (see reference in Synapse docs [here](https://synapse.docs.vertex.link/en/latest/synapse/userguides/syn_tools_genpkg.html#building-the-example-package))
