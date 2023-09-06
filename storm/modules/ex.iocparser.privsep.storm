@@ -41,15 +41,16 @@ function modelParserUrlResponse(node, json) {
 
     $srcnode = $getMetaSource()
 
-    if ($json.meta.title) {
-        [media:news=("iocparser",$json.meta.url) :title=$json.meta.title :summary=$json.meta.description :url=$json.meta.url]
-        [<(seen)+ { yield $srcnode }]
-        [<(refs)+ { yield $node }]
-    }
-
     //This is very ugly and WIP. Ideally this should be done with more clever use of functions, but hey, it works. 
 
     tee 
+    //create a media:news node from the JSON API response
+    {if ($json.meta.title) {
+        [media:news=("iocparser",$json.meta.url) :title=$json.meta.title :summary=$json.meta.description :url=$json.meta.url]
+        [<(seen)+ { yield $srcnode }]
+        [<(refs)+ { yield $node }]
+    }}
+    //parse indicators from the JSON API response
     {if ($lib.len($json.data.DOMAIN) != 0 ) {for $ioc in $json.data.DOMAIN {[inet:fqdn=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
     {if ($lib.len($json.data.IPv6) != 0 ) {for $ioc in $json.data.IPv6 {[inet:ipv6=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
     {if ($lib.len($json.data.IPv4) != 0 ) {for $ioc in $json.data.IPv4 {[inet:ipv4=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
