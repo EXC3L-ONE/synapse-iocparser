@@ -10,5 +10,5 @@ switch $node.form() {
 }
 
 if ($data) {
-    { divert $cmdopts.yield $privsep.modelParserUrlResponse($node, $data) }
+    divert $cmdopts.yield $privsep.modelParserUrlResponse($node, $data)
 }

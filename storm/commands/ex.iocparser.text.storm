@@ -4,8 +4,9 @@ init {
 }
 
 $data = $lib.false
+$query_time = $lib.time.now()
 $data = $api.parseText($cmdopts.text, $cmdopts.asof)
 
 if ($data) {
-    { $privsep.modelParserTextResponse($cmdopts.text, $data) }
+    divert $lib.true $privsep.modelParserTextResponse($cmdopts.text, $data, $query_time)
 }

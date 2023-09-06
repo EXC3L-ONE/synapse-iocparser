@@ -1,5 +1,5 @@
 name: ex-iocparser
-version: 1.0.1
+version: 1.0.2
 synapse_minversion: [2, 140, 0]
 desc: The ex-iocparser package provides a power-up wrapper for the iocparser.com functionality. It allows for parsing raw text or public URLs and models appropriate nodes for the media:news and IOC nodes.
 
@@ -60,7 +60,6 @@ commands:
         - inet:asn
         - it:sec:cve
         - inet:mac
-        - crypto:currency:address
         - it:mitre:attack:technique
   
   - name: ex.iocparser.text
@@ -82,7 +81,7 @@ commands:
           help: Show verbose debug output.
     forms:
       output:
-        - media:news
+        - it:exec:query
         - inet:fqdn
         - inet:ipv6
         - inet:ipv4
@@ -95,7 +94,6 @@ commands:
         - inet:asn
         - it:sec:cve
         - inet:mac
-        - crypto:currency:address
         - it:mitre:attack:technique
 
 optic:
