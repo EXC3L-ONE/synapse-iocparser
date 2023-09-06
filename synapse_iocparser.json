@@ -1,0 +1,180 @@
+{
+  "author": {
+    "name": "EXC3L",
+    "url": "https://github.com/EXC3L-ONE"
+  },
+  "build": {
+    "time": 1694020846203
+  },
+  "commands": [
+    {
+      "cmdargs": [
+        [
+          "--yield",
+          {
+            "action": "store_true",
+            "default": false,
+            "help": "Yield the newly created nodes rather than the input inet:url nodes.",
+            "type": "bool"
+          }
+        ],
+        [
+          "--asof",
+          {
+            "default": "-30days",
+            "help": "Specify the maximum age for a cached result. To disable caching, use --asof now.",
+            "type": "str"
+          }
+        ],
+        [
+          "--debug",
+          {
+            "action": "store_true",
+            "default": false,
+            "help": "Show verbose debug output.",
+            "type": "bool"
+          }
+        ]
+      ],
+      "descr": "Parse an inbound URL using iocparser.com",
+      "forms": {
+        "input": [
+          "inet:url"
+        ],
+        "output": [
+          "media:news",
+          "inet:fqdn",
+          "inet:ipv6",
+          "inet:ipv4",
+          "inet:email",
+          "file:base",
+          "inet:url",
+          "hash:md5",
+          "hash:sha1",
+          "hash:sha256",
+          "inet:asn",
+          "it:sec:cve",
+          "inet:mac",
+          "it:mitre:attack:technique"
+        ]
+      },
+      "name": "ex.iocparser.url",
+      "perms": [
+        [
+          "ex",
+          "iocparser",
+          "user"
+        ]
+      ],
+      "storm": "init {\n    $api = $lib.import(ex.iocparser.api, debug=$lib.debug)\n    $privsep = $lib.import(ex.iocparser.privsep, debug=$lib.debug)\n}\n\n$data = $lib.false\nswitch $node.form() {\n    \"inet:url\": { $data = $api.parseUrl($node.repr(), $cmdopts.asof) }\n    *: { if $lib.debug { $lib.warn(\"unsupported form received: {f}\", f=$node.form()) } }\n}\n\nif ($data) {\n    divert $cmdopts.yield $privsep.modelParserUrlResponse($node, $data)\n}"
+    },
+    {
+      "cmdargs": [
+        [
+          "text",
+          {
+            "help": "Text with IOCs to parse",
+            "type": "str"
+          }
+        ],
+        [
+          "--asof",
+          {
+            "default": "-30days",
+            "help": "Specify the maximum age for a cached result. To disable caching, use --asof now.",
+            "type": "str"
+          }
+        ],
+        [
+          "--debug",
+          {
+            "action": "store_true",
+            "default": false,
+            "help": "Show verbose debug output.",
+            "type": "bool"
+          }
+        ]
+      ],
+      "descr": "Parse IOCs from raw text",
+      "forms": {
+        "output": [
+          "it:exec:query",
+          "inet:fqdn",
+          "inet:ipv6",
+          "inet:ipv4",
+          "inet:email",
+          "file:base",
+          "inet:url",
+          "hash:md5",
+          "hash:sha1",
+          "hash:sha256",
+          "inet:asn",
+          "it:sec:cve",
+          "inet:mac",
+          "it:mitre:attack:technique"
+        ]
+      },
+      "name": "ex.iocparser.text",
+      "perms": [
+        [
+          "ex",
+          "iocparser",
+          "user"
+        ]
+      ],
+      "storm": "init {\n    $api = $lib.import(ex.iocparser.api, debug=$lib.debug)\n    $privsep = $lib.import(ex.iocparser.privsep, debug=$lib.debug)\n}\n\n$data = $lib.false\n$query_time = $lib.time.now()\n$data = $api.parseText($cmdopts.text, $cmdopts.asof)\n\nif ($data) {\n    divert $lib.true $privsep.modelParserTextResponse($cmdopts.text, $data, $query_time)\n}"
+    }
+  ],
+  "desc": "The ex-iocparser package provides a power-up wrapper for the iocparser.com functionality. It allows for parsing raw text or public URLs and models appropriate nodes for the media:news and IOC nodes.",
+  "modules": [
+    {
+      "name": "ex.iocparser.api",
+      "storm": "$privsep = $lib.import(ex.iocparser.privsep, debug=$lib.debug)\n\nfunction makeParseRequest(url, query, asof) {\n    $resp = $privsep.makeIocparserApiCall($url, $query, $asof)\n\n    if ($resp and $resp.status = \"success\") {\n        return($resp)\n    } else {\n        $lib.warn(\"got a bad response from IocParser for query: {q}\", q=$query)\n        return($lib.false)\n    }\n}\n\n// Parse IOCs from a URL\nfunction parseUrl(url, asof) {\n    $api_url = \"https://api.iocparser.com/url\"\n    $query = $lib.dict(\"url\"=$url)\n    return($makeParseRequest($api_url, $query, $asof))\n}\n\n// Parse IOCs from a text blob\nfunction parseText(text, asof) {\n    $api_url = \"https://api.iocparser.com/text\"\n    $query = $lib.dict(\"data\"=$text)\n    return($makeParseRequest($api_url, $query, $asof))\n}"
+    },
+    {
+      "asroot:perms": [
+        [
+          "ex",
+          "iocparser",
+          "user"
+        ]
+      ],
+      "modconf": {
+        "source": "298b09546fbb3bc115cef15ba85a3916"
+      },
+      "name": "ex.iocparser.privsep",
+      "storm": "// Get the proper meta:source node for iocparser\n// Args: n/a\n// Returns: meta:source node\nfunction getMetaSource() {\n    [ meta:source=$modconf.source :name=\"iocparser\" ]\n    return($node)\n}\n\n// Make an API request to iocparser.com\n// Args: API endpoint URL, query text/url, asof\n// Returns: JSON response\nfunction makeIocparserApiCall(url, query, asof) {\n\n    $cachedData = $lib.jsonstor.cacheget(\"ex.iocparser\", $query, $asof)\n    if ($cachedData) {\n        if $lib.debug { $lib.print(\"Using cached data for query: {s}\", s=$query) }\n        return($cachedData)\n    }\n\n    $headers = $lib.dict(\"Content-Type\"=\"application/json\")\n\n    $resp = $lib.inet.http.post($url, $headers, $query)\n\n    if ($resp.code != 200) { return($lib.false) }\n\n    $resp = $resp.body\n    $json = $resp.json()\n    $ret = $lib.jsonstor.cacheset(\"ex.iocparser\", $query, $json)\n    if $lib.debug { \n        $lib.print(\"Wrote http query cache data for {s}: {r}\", s=$query, r=$ret) \n    }\n\n    return($json)\n}\n\n// Parse the JSON response from the API \n// Args: inbound node, JSON API resp\n// Returns: n/a\n// Yields nodes\nfunction modelParserUrlResponse(node, json) {\n\n    $srcnode = $getMetaSource()\n\n    //This is very ugly and WIP. Ideally this should be done with more clever use of functions, but hey, it works. \n\n    tee \n    //create a media:news node from the JSON API response\n    {if ($json.meta.title) {\n        [media:news=(\"iocparser\",$json.meta.url) :title=$json.meta.title :summary=$json.meta.description :url=$json.meta.url]\n        [<(seen)+ { yield $srcnode }]\n        [<(refs)+ { yield $node }]\n    }}\n    //parse indicators from the JSON API response\n    {if ($lib.len($json.data.DOMAIN) != 0 ) {for $ioc in $json.data.DOMAIN {[inet:fqdn=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.IPv6) != 0 ) {for $ioc in $json.data.IPv6 {[inet:ipv6=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.IPv4) != 0 ) {for $ioc in $json.data.IPv4 {[inet:ipv4=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.EMAIL) != 0 ) {for $ioc in $json.data.EMAIL {[inet:email=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_NAME) != 0 ) {for $ioc in $json.data.FILE_NAME {[file:base=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.URL) != 0 ) {for $ioc in $json.data.URL {[inet:url=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_HASH_MD5) != 0 ) {for $ioc in $json.data.FILE_HASH_MD5 {[hash:md5=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_HASH_SHA1) != 0 ) {for $ioc in $json.data.FILE_HASH_SHA1 {[hash:sha1=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_HASH_SHA256) != 0 ) {for $ioc in $json.data.FILE_HASH_SHA256 {[hash:sha256=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.ASN) != 0 ) {for $ioc in $json.data.ASN {[inet:asn=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.CVE) != 0 ) {for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.MAC_ADDRESS) != 0 ) {for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}\n    \n    //TODO\n    //for $ioc in $json.data.YARA_RULE {[it:app:yara:rule=(\"iocparser\", $ioc) :text=$ioc] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}\n    //for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(\":\") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {media:news=(\"iocparser\",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}\n}\n\n// Parse the JSON response from the API \n// Args: query content, JSON API resp, query time\n// Returns: n/a\n// Yields nodes\nfunction modelParserTextResponse(query, json, query_time) {\n\n    $srcnode = $getMetaSource()\n\n    tee\n    {if ($lib.len($json.data.DOMAIN) != 0 ) {for $ioc in $json.data.DOMAIN {[inet:fqdn=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.IPv6) != 0 ) {for $ioc in $json.data.IPv6 {[inet:ipv6=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.IPv4) != 0 ) {for $ioc in $json.data.IPv4 {[inet:ipv4=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.EMAIL) != 0 ) {for $ioc in $json.data.EMAIL {[inet:email=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_NAME) != 0 ) {for $ioc in $json.data.FILE_NAME {[file:base=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.URL) != 0 ) {for $ioc in $json.data.URL {[inet:url=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_HASH_MD5) != 0 ) {for $ioc in $json.data.FILE_HASH_MD5 {[hash:md5=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_HASH_SHA1) != 0 ) {for $ioc in $json.data.FILE_HASH_SHA1 {[hash:sha1=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.FILE_HASH_SHA256) != 0 ) {for $ioc in $json.data.FILE_HASH_SHA256 {[hash:sha256=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.ASN) != 0 ) {for $ioc in $json.data.ASN {[inet:asn=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.CVE) != 0 ) {for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    {if ($lib.len($json.data.MAC_ADDRESS) != 0 ) {for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]} }}\n    \n    //TODO\n    //for $ioc in $json.data.YARA_RULE {[it:app:yara:rule=(\"iocparser\", $ioc) :text=$ioc] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]}\n    //for $ioc in $json.data.MITRE_ATT { $ioc = $ioc.split(\":\") [it:mitre:attack:technique=$ioc.0] [<(refs)+ {[it:exec:query=($query, $query_time) :time=$query_time :language=\"iocparser\" :api:url=\"https://api.iocparser.com/text\" :text=$query]}] [<(seen)+ {yield $srcnode}]}\n}"
+    }
+  ],
+  "name": "ex-iocparser",
+  "optic": {
+    "actions": [
+      {
+        "descr": "Use iocparser.com to parse IOCs from an inbound URL",
+        "forms": [
+          "inet:url"
+        ],
+        "name": "Parse IOCs from URL",
+        "storm": "ex.iocparser.url"
+      }
+    ]
+  },
+  "perms": [
+    {
+      "default": false,
+      "desc": "Allows a user to leverage the ex-iocparser package",
+      "gate": "cortex",
+      "perm": [
+        "ex",
+        "iocparser",
+        "user"
+      ]
+    }
+  ],
+  "synapse_minversion": [
+    2,
+    140,
+    0
+  ],
+  "version": "1.0.2"
+}
