@@ -43,13 +43,14 @@ function modelParserUrlResponse(node, json) {
 
     //This is very ugly and WIP. Ideally this should be done with more clever use of functions, but hey, it works. 
 
-    tee 
     //create a media:news node from the JSON API response
-    {if ($json.meta.title) {
+    if ($json.meta.title) {
         [media:news=("iocparser",$json.meta.url) :title=$json.meta.title :summary=$json.meta.description :url=$json.meta.url]
         [<(seen)+ { yield $srcnode }]
         [<(refs)+ { yield $node }]
-    }}
+    }
+
+    tee
     //parse indicators from the JSON API response
     {if ($lib.len($json.data.DOMAIN) != 0 ) {for $ioc in $json.data.DOMAIN {[inet:fqdn=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
     {if ($lib.len($json.data.IPv6) != 0 ) {for $ioc in $json.data.IPv6 {[inet:ipv6=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
@@ -63,6 +64,7 @@ function modelParserUrlResponse(node, json) {
     {if ($lib.len($json.data.ASN) != 0 ) {for $ioc in $json.data.ASN {[inet:asn=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
     {if ($lib.len($json.data.CVE) != 0 ) {for $ioc in $json.data.CVE {[it:sec:cve=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
     {if ($lib.len($json.data.MAC_ADDRESS) != 0 ) {for $ioc in $json.data.MAC_ADDRESS {[inet:mac=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]} }}
+    | uniq
     
     //TODO
     //for $ioc in $json.data.YARA_RULE {[it:app:yara:rule=("iocparser", $ioc) :text=$ioc] [<(refs)+ {media:news=("iocparser",$json.meta.url)}] [<(seen)+ {yield $srcnode}]}
